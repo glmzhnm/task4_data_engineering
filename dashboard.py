@@ -6,6 +6,7 @@ import networkx as nx
 import streamlit as st
 import matplotlib.pyplot as plt
 from collections import defaultdict
+import datetime
 
 
 def fix_price(val):
@@ -62,7 +63,15 @@ def process_folder(path):
 
     orders['timestamp'] = pd.to_datetime(orders['timestamp'].astype(str), errors='coerce', utc=True)
     orders['date'] = orders['timestamp'].dt.date
+    current_year = datetime.datetime.now().year
 
+    def fix_year(d):
+        if pd.isna(d): return d
+        if d.year > 2025:
+            return d.replace(year=2024)
+        return d
+
+    orders['date'] = orders['date'].apply(fix_year)
     orders['unit_price'] = orders['unit_price'].apply(fix_price)
     orders['quantity'] = pd.to_numeric(orders['quantity'], errors='coerce').fillna(0)
     orders['paid_price'] = orders['quantity'] * orders['unit_price']
